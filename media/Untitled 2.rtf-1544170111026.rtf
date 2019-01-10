@@ -1,0 +1,219 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf400
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue255;\red0\green128\blue0;\red128\green128\blue128;
+\red255\green0\blue0;\red255\green0\blue255;}
+{\*\expandedcolortbl;;\csgenericrgb\c0\c0\c100000;\csgenericrgb\c0\c50196\c0;\csgenericrgb\c50196\c50196\c50196;
+\csgenericrgb\c100000\c0\c0;\csgenericrgb\c100000\c0\c100000;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs19 \cf2 \'96\
+\
+USE\cf0  [UBMeDB]\
+\cf2 GO\cf0 \
+\cf3 /****** Object:  StoredProcedure [dbo].[sp_GetEventsByNameLocationForSearchNew_TimeZone]    Script Date: 9/8/2018 5:28:00 AM ******/\cf0 \
+\cf2 SET\cf0  \cf2 ANSI_NULLS\cf0  \cf2 ON\cf0 \
+\cf2 GO\cf0 \
+\cf2 SET\cf0  \cf2 QUOTED_IDENTIFIER\cf0  \cf2 ON\cf0 \
+\cf2 GO\cf0 \
+\
+\cf3 /*\cf0 \
+\cf3 949/1/15/C/null/40.61082/-75.44122/330/0,0,0,0\cf0 \
+\cf3  [dbo].[sp_GetEventsByNameLocationForSearchNew_TimeZone] 949,1,15,'aa','New York','NY','40.61082','-75.44122',330\cf0 \
+\cf3  [dbo].[sp_GetEventsByNameLocationForSearchNew_TimeZone] 949,1,15,'C','','','40.61082','-75.44122',330\cf0 \
+\cf3 */\cf0 \
+\
+\cf2 ALTER\cf0  \cf2 PROCEDURE\cf0  [dbo]\cf4 .\cf0 [sp_GetEventsByNameLocationForSearchNew_TimeZone]\
+	@UserId \cf2 BIGINT\cf4 ,\cf0 \
+	@PageNumber \cf2 INT\cf4 ,\cf0 \
+	@PageSize \cf2 INT\cf4 ,\cf0 \
+	@SearchText \cf2 NVARCHAR\cf4 (\cf0 100\cf4 )\cf0  \cf4 =\cf0  \cf4 NULL,\cf0 \
+	@City \cf2 NVARCHAR\cf4 (\cf0 100\cf4 )\cf0  \cf4 =\cf0  \cf4 NULL,\cf0 \
+	@State \cf2 NVARCHAR\cf4 (\cf0 100\cf4 )\cf0  \cf4 =\cf0  \cf4 NULL,\cf0 \
+	@Latitude \cf2 VARCHAR\cf4 (\cf0 50\cf4 ),\cf0 \
+	@Longitude \cf2 VARCHAR\cf4 (\cf0 50\cf4 ),\cf0 \
+	@OffsetInMinutes \cf2 INT\cf0 \
+\cf2 AS\cf0 \
+\cf2 BEGIN\cf0 \
+	\cf2 SET\cf0  \cf2 ANSI_NULLS\cf0  \cf2 ON\cf0 \
+	\cf2 SET\cf0  \cf2 QUOTED_IDENTIFIER\cf0  \cf2 OFF\cf0 \
+	\cf2 SET\cf0  \cf2 ARITHABORT\cf0  \cf2 ON\cf0 \
+\
+	\cf2 IF\cf4 (\cf0 @SearchText \cf4 =\cf0  \cf5 ''\cf4 )\cf0 \
+		\cf2 SET\cf0  @SearchText \cf4 =\cf0  \cf4 NULL\cf0 \
+	\cf2 IF\cf4 (\cf0 @City \cf4 =\cf0  \cf5 ''\cf4 )\cf0 \
+		\cf2 SET\cf0  @City \cf4 =\cf0  \cf4 NULL\cf0 \
+	\cf2 IF\cf4 (\cf0 @State \cf4 =\cf0  \cf5 ''\cf4 )\cf0 \
+		\cf2 SET\cf0  @State \cf4 =\cf0  \cf4 NULL\cf0 \
+\
+	\cf2 DECLARE\cf0  @ttBlockUsers \cf2 AS\cf0  \cf2 TABLE\cf0 \
+\cf2 	\cf4 (\cf0 \
+		UserId \cf2 BIGINT\cf0 \
+	\cf4 )\cf0 \
+\
+	\cf2 DECLARE\cf0  @radiusOfTheEarth \cf2 INT\cf0 \
+\
+	\cf2 INSERT\cf0  \cf2 INTO\cf0  @ttBlockUsers\
+	\cf2 SELECT\cf0  \cf4 *\cf0  \cf2 FROM\cf0 \
+\cf2 	\cf4 (\cf0 \
+\cf2 		\cf4 (\cf0 \
+			\cf2 SELECT\cf0  ToUserID \cf2 AS\cf0  BlockUserId \cf2 FROM\cf0  App_UsersFriends \cf2 WITH\cf4 (\cf2 NOLOCK\cf4 )\cf0 \
+			\cf2 WHERE\cf0  FromUserID \cf4 =\cf0  @UserId \cf4 AND\cf0  FriendStatus \cf4 =\cf0  \cf5 'Block'\cf0 \
+		\cf4 )\cf0 \
+		\cf2 UNION\cf0 \
+\cf2 		\cf4 (\cf0 \
+			\cf2 SELECT\cf0  FromUserID \cf2 AS\cf0  BlockUserId \cf2 FROM\cf0  App_UsersFriends \cf2 WITH\cf4 (\cf2 NOLOCK\cf4 )\cf0 \
+			\cf2 WHERE\cf0  ToUserID \cf4 =\cf0  @UserId \cf4 AND\cf0  FriendStatus \cf4 =\cf0  \cf5 'Block'\cf0 \
+		\cf4 )\cf0 \
+	\cf4 )\cf0  \cf2 AS\cf0  blockUser\
+\
+	\cf2 DECLARE\cf0  @ttEventVenue \cf2 AS\cf0  \cf2 TABLE\cf0 \
+\cf2 	\cf4 (\cf0 \
+		VenueId \cf2 BIGINT\cf4 ,\cf0 \
+		Latitude \cf2 NVARCHAR\cf4 (\cf0 50\cf4 ),\cf0 \
+		Longitude \cf2 NVARCHAR\cf4 (\cf0 50\cf4 ),\cf0 \
+		Distance \cf2 DECIMAL\cf4 (\cf0 18\cf4 ,\cf0 2\cf4 )\cf0 \
+	\cf4 )\cf0 \
+\
+	\cf2 SET\cf0  @radiusOfTheEarth \cf4 =\cf0  3961\cf4 ;\cf3 --3961 miles & 6373 km\cf0 \
+\
+	\cf2 IF\cf4 (\cf6 ISNULL\cf4 (\cf0 @City\cf4 ,\cf5 ''\cf4 )<>\cf5 ''\cf4 )\cf0  \cf3 --city not null or blank\cf0 \
+		\cf2 BEGIN\cf0 \
+	\cf2 if\cf0  \cf4 exists(\cf2 select\cf0  \cf4 *\cf0  \cf2 FROM\cf0  EventVenueMaster evm \cf2 WITH\cf4 (\cf2 NOLOCK\cf4 )\cf0 \
+		\cf2 where\cf0 \
+		 evm\cf4 .\cf0 Region \cf4 IN\cf2  \cf4 (\cf2 SELECT \cf4 (\cf2 CASE\cf0  \cf2 WHEN\cf0  \cf6 ISNULL\cf4 (\cf0 States\cf4 ,\cf5 ''\cf4 )=\cf5 ''\cf0  \cf2 THEN\cf0  evm\cf4 .\cf0 Region \cf2 ELSE\cf0  States \cf2 END\cf4 )\cf0  \cf2 FROM\cf0  dbo\cf4 .\cf0 FUN_GetLocation\cf4 (\cf0 @State\cf4 ))\cf0 \
+		\cf4 AND\cf0 \
+\cf2 		\cf4 (\cf0 \
+			\cf6 ISNULL\cf4 (\cf0 evm\cf4 .\cf0 City\cf4 ,\cf0  \cf5 ''\cf4 )\cf0  \cf4 LIKE\cf0  \cf5 N'%'\cf0  \cf4 +\cf0  \cf6 ISNULL\cf4 (\cf0 @City\cf4 ,\cf0  \cf6 ISNULL\cf4 (\cf0 evm\cf4 .\cf0 City\cf4 ,\cf0  \cf5 ''\cf4 ))\cf0  \cf4 +\cf0  \cf5 '%'\cf0 \
+			\cf4 OR\cf0 \
+			\cf6 REPLACE\cf4 (\cf6 ISNULL\cf4 (\cf0 evm\cf4 .\cf0 City\cf4 ,\cf0  \cf5 ''\cf4 ),\cf0  \cf5 ' '\cf4 ,\cf0  \cf5 ''\cf4 )\cf0  \cf4 LIKE\cf0  \cf5 N'%'\cf0  \cf4 +\cf0  \cf6 ISNULL\cf4 (\cf0 @City\cf4 ,\cf0  \cf6 REPLACE\cf4 (\cf6 ISNULL\cf4 (\cf0 evm\cf4 .\cf0 City\cf4 ,\cf0  \cf5 ''\cf4 ),\cf0  \cf5 ' '\cf4 ,\cf0  \cf5 ''\cf4 ))\cf0  \cf4 +\cf0  \cf5 '%'\cf0 \
+		\cf4 )\cf0  \cf4 and\cf0  Latitude \cf4 !=\cf0  \cf5 ''\cf0  \cf4 and\cf0  Longitude \cf4 !=\cf0  \cf5 ''\cf4 )\cf0 \
+			\cf2 begin\cf0 \
+			\cf2 print\cf4 (\cf5 'IS Ex => '\cf4 )\cf0 \
+				\cf2 INSERT\cf0  \cf2 INTO\cf0  @ttEventVenue\
+				\cf2 SELECT\cf0 \
+				evm\cf4 .\cf0 VenueId\cf4 ,\cf0 \
+				evm\cf4 .\cf0 Latitude\cf4 ,\cf0 \
+				evm\cf4 .\cf0 Longitude\cf4 ,\cf0 \
+				\cf6 ISNULL\cf4 ((\cf2 select\cf0  dbo\cf4 .\cf0 FN_CalculateDistanceByLatLong\cf4 (\cf0 @Latitude\cf4 ,\cf0 @Longitude\cf4 ,\cf6 ISNULL\cf4 (\cf0 Latitude\cf4 ,\cf0 0.0\cf4 ),\cf6 ISNULL\cf4 (\cf0 Longitude\cf4 ,\cf0 0.0\cf4 )))\cf0  \cf4 ,\cf0 0.0\cf4 )\cf0  \
+				\cf3 --ISNULL(cast((select dbo.FN_CalculateDistanceByLatLong(cast(@Latitude as decimal(20,10)),cast(@Longitude as decimal(20,10)),'40.7299355','-73.9546495')) as nvarchar(25)),'0.0') \cf0 \
+\
+				\cf2 FROM\cf0  EventVenueMaster evm \cf2 WITH\cf4 (\cf2 NOLOCK\cf4 )\cf0 \
+				\cf2 where\cf0 \
+				 evm\cf4 .\cf0 Region \cf4 IN\cf2  \cf4 (\cf2 SELECT \cf4 (\cf2 CASE\cf0  \cf2 WHEN\cf0  \cf6 ISNULL\cf4 (\cf0 States\cf4 ,\cf5 ''\cf4 )=\cf5 ''\cf0  \cf2 THEN\cf0  evm\cf4 .\cf0 Region \cf2 ELSE\cf0  States \cf2 END\cf4 )\cf0  \cf2 FROM\cf0  dbo\cf4 .\cf0 FUN_GetLocation\cf4 (\cf0 @State\cf4 ))\cf0 \
+				\cf4 AND\cf0 \
+\cf2 				\cf4 (\cf0 \
+					\cf6 ISNULL\cf4 (\cf0 evm\cf4 .\cf0 City\cf4 ,\cf0  \cf5 ''\cf4 )\cf0  \cf4 LIKE\cf0  \cf5 N'%'\cf0  \cf4 +\cf0  \cf6 ISNULL\cf4 (\cf0 @City\cf4 ,\cf0  \cf6 ISNULL\cf4 (\cf0 evm\cf4 .\cf0 City\cf4 ,\cf0  \cf5 ''\cf4 ))\cf0  \cf4 +\cf0  \cf5 '%'\cf0 \
+					\cf4 OR\cf0 \
+					\cf6 REPLACE\cf4 (\cf6 ISNULL\cf4 (\cf0 evm\cf4 .\cf0 City\cf4 ,\cf0  \cf5 ''\cf4 ),\cf0  \cf5 ' '\cf4 ,\cf0  \cf5 ''\cf4 )\cf0  \cf4 LIKE\cf0  \cf5 N'%'\cf0  \cf4 +\cf0  \cf6 ISNULL\cf4 (\cf0 @City\cf4 ,\cf0  \cf6 REPLACE\cf4 (\cf6 ISNULL\cf4 (\cf0 evm\cf4 .\cf0 City\cf4 ,\cf0  \cf5 ''\cf4 ),\cf0  \cf5 ' '\cf4 ,\cf0  \cf5 ''\cf4 ))\cf0  \cf4 +\cf0  \cf5 '%'\cf0 \
+				\cf4 )\cf0  \cf4 and\cf0  Latitude \cf4 !=\cf0  \cf5 ''\cf0  \cf4 and\cf0  Longitude \cf4 !=\cf0  \cf5 ''\cf0 \
+			\cf2 end\cf0 \
+		\cf2 else\cf0  		\
+			\cf2 begin\cf0 \
+			\cf2 print\cf4 (\cf5 'IS not Ex => '\cf4 )\cf0 \
+					\cf2 INSERT\cf0  \cf2 INTO\cf0  @ttEventVenue\
+				\cf2 SELECT\cf0 \
+				evm\cf4 .\cf0 VenueId\cf4 ,\cf0 \
+				evm\cf4 .\cf0 Latitude\cf4 ,\cf0 \
+				evm\cf4 .\cf0 Longitude\cf4 ,\cf0 \
+				\cf6 ISNULL\cf4 ((\cf2 select\cf0  dbo\cf4 .\cf0 FN_CalculateDistanceByLatLong\cf4 (\cf0 @Latitude\cf4 ,\cf0 @Longitude\cf4 ,\cf0 0.0\cf4 ,\cf0 0.0\cf4 ))\cf0  \cf4 ,\cf0 0.0\cf4 )\cf0  \
+				\cf3 --ISNULL(cast((select dbo.FN_CalculateDistanceByLatLong(cast(@Latitude as decimal(20,10)),cast(@Longitude as decimal(20,10)),'40.7299355','-73.9546495')) as nvarchar(25)),'0.0') \cf0 \
+\
+				\cf2 FROM\cf0  EventVenueMaster evm \cf2 WITH\cf4 (\cf2 NOLOCK\cf4 )\cf0 \
+				\cf2 where\cf0 \
+				 evm\cf4 .\cf0 Region \cf4 IN\cf2  \cf4 (\cf2 SELECT \cf4 (\cf2 CASE\cf0  \cf2 WHEN\cf0  \cf6 ISNULL\cf4 (\cf0 States\cf4 ,\cf5 ''\cf4 )=\cf5 ''\cf0  \cf2 THEN\cf0  evm\cf4 .\cf0 Region \cf2 ELSE\cf0  States \cf2 END\cf4 )\cf0  \cf2 FROM\cf0  dbo\cf4 .\cf0 FUN_GetLocation\cf4 (\cf0 @State\cf4 ))\cf0 \
+				\cf4 AND\cf0 \
+\cf2 				\cf4 (\cf0 \
+					\cf6 ISNULL\cf4 (\cf0 evm\cf4 .\cf0 City\cf4 ,\cf0  \cf5 ''\cf4 )\cf0  \cf4 LIKE\cf0  \cf5 N'%'\cf0  \cf4 +\cf0  \cf6 ISNULL\cf4 (\cf0 @City\cf4 ,\cf0  \cf6 ISNULL\cf4 (\cf0 evm\cf4 .\cf0 City\cf4 ,\cf0  \cf5 ''\cf4 ))\cf0  \cf4 +\cf0  \cf5 '%'\cf0 \
+					\cf4 OR\cf0 \
+					\cf6 REPLACE\cf4 (\cf6 ISNULL\cf4 (\cf0 evm\cf4 .\cf0 City\cf4 ,\cf0  \cf5 ''\cf4 ),\cf0  \cf5 ' '\cf4 ,\cf0  \cf5 ''\cf4 )\cf0  \cf4 LIKE\cf0  \cf5 N'%'\cf0  \cf4 +\cf0  \cf6 ISNULL\cf4 (\cf0 @City\cf4 ,\cf0  \cf6 REPLACE\cf4 (\cf6 ISNULL\cf4 (\cf0 evm\cf4 .\cf0 City\cf4 ,\cf0  \cf5 ''\cf4 ),\cf0  \cf5 ' '\cf4 ,\cf0  \cf5 ''\cf4 ))\cf0  \cf4 +\cf0  \cf5 '%'\cf0 \
+				\cf4 )\cf0  \cf4 and\cf0  Latitude \cf4 !=\cf0  \cf5 ''\cf0  \cf4 and\cf0  Longitude \cf4 !=\cf0  \cf5 ''\cf0 \
+			\cf2 end\cf0 \
+	\cf2 END\cf0 \
+	\cf2 ELSE\cf0 \
+		\cf2 BEGIN\cf0 \
+			\cf2 if\cf0  \cf4 EXISTs(\cf2 select\cf0  \cf4 *\cf0  \cf2 FROM\cf0  EventVenueMaster evm \cf2 WITH\cf4 (\cf2 NOLOCK\cf4 )\cf0 \
+						\cf2 WHERE\cf0  evm\cf4 .\cf0 Region \cf4 IN\cf2  \cf4 (\cf2 SELECT \cf4 (\cf2 CASE\cf0  \cf2 WHEN\cf0  \cf6 ISNULL\cf4 (\cf0 States\cf4 ,\cf5 ''\cf4 )=\cf5 ''\cf0  \cf2 THEN\cf0  evm\cf4 .\cf0 Region \cf2 ELSE\cf0  States \cf2 END\cf4 )\cf0  \cf2 FROM\cf0  dbo\cf4 .\cf0 FUN_GetLocation\cf4 (\cf0 @State\cf4 ))\cf0  \cf4 and\cf0  Latitude \cf4 !=\cf0  \cf5 ''\cf0  \cf4 and\cf0  Longitude \cf4 !=\cf0  \cf5 ''\cf4 )\cf0 \
+		 \
+			\cf2 begin\cf0 \
+			\cf2 print\cf4 (\cf5 'IS Ex 2=> '\cf4 )\cf0 \
+			\cf2 print\cf0  @Latitude\
+			\cf2 print\cf0  @Longitude\
+\
+				\cf2 INSERT\cf0  \cf2 INTO\cf0  @ttEventVenue\
+				\cf2 SELECT\cf0 \
+				evm\cf4 .\cf0 VenueId\cf4 ,\cf0 \
+				evm\cf4 .\cf0 Latitude\cf4 ,\cf0 \
+				evm\cf4 .\cf0 Longitude\cf4 ,\cf0 \
+				\cf3 --ISNULL(cast((select dbo.FN_CalculateDistanceByLatLong(@Latitude,@Longitude,Latitude,Longitude)) as nvarchar(25)),'0.0') \cf0 \
+				\cf6 ISNULL\cf4 ((\cf2 select\cf0  dbo\cf4 .\cf0 FN_CalculateDistanceByLatLong\cf4 (\cf0 @Latitude\cf4 ,\cf0 @Longitude\cf4 ,\cf6 ISNULL\cf4 (\cf0 Latitude\cf4 ,\cf5 '0.0'\cf4 ),\cf6 ISNULL\cf4 (\cf0 Longitude\cf4 ,\cf5 '0.0'\cf4 )))\cf0  \cf4 ,\cf0 0.0\cf4 )\cf0  \
+				\cf3 --ISNULL(cast((select dbo.FN_CalculateDistanceByLatLong(cast(@Latitude as decimal(20,10)),cast(@Longitude as decimal(20,10)),'40.7299355','-73.9546495')) as nvarchar(25)),'0.0') \cf0 \
+				\cf2 FROM\cf0  EventVenueMaster evm \cf2 WITH\cf4 (\cf2 NOLOCK\cf4 )\cf0 \
+				\cf2 WHERE\cf0  evm\cf4 .\cf0 Region \cf4 IN\cf2  \cf4 (\cf2 SELECT \cf4 (\cf2 CASE\cf0  \cf2 WHEN\cf0  \cf6 ISNULL\cf4 (\cf0 States\cf4 ,\cf5 ''\cf4 )=\cf5 ''\cf0  \cf2 THEN\cf0  evm\cf4 .\cf0 Region \cf2 ELSE\cf0  States \cf2 END\cf4 )\cf0  \cf2 FROM\cf0  dbo\cf4 .\cf0 FUN_GetLocation\cf4 (\cf0 @State\cf4 ))and\cf0  Latitude \cf4 !=\cf0  \cf5 ''\cf0  \cf4 and\cf0  Longitude \cf4 !=\cf0  \cf5 ''\cf0  \
+			\cf2 end\cf0 \
+		\cf2 else\cf0  \
+			\cf2 begin\cf0 \
+			\cf2 print\cf4 (\cf5 'IS noy Ex 2 => '\cf4 )\cf0 \
+				\cf2 INSERT\cf0  \cf2 INTO\cf0  @ttEventVenue\
+				\cf2 SELECT\cf0 \
+				evm\cf4 .\cf0 VenueId\cf4 ,\cf0 \
+				evm\cf4 .\cf0 Latitude\cf4 ,\cf0 \
+				evm\cf4 .\cf0 Longitude\cf4 ,\cf0 \
+				\cf3 --ISNULL(cast((select dbo.FN_CalculateDistanceByLatLong(@Latitude,@Longitude,Latitude,Longitude)) as nvarchar(25)),'0.0') \cf0 \
+				\cf6 ISNULL\cf4 ((\cf2 select\cf0  dbo\cf4 .\cf0 FN_CalculateDistanceByLatLong\cf4 (\cf0 @Latitude\cf4 ,\cf0 @Longitude\cf4 ,\cf0 0.0\cf4 ,\cf0 0.0\cf4 ))\cf0  \cf4 ,\cf0 0.0\cf4 )\cf0  \
+				\cf3 --ISNULL(cast((select dbo.FN_CalculateDistanceByLatLong(cast(@Latitude as decimal(20,10)),cast(@Longitude as decimal(20,10)),'40.7299355','-73.9546495')) as nvarchar(25)),'0.0') \cf0 \
+				\cf2 FROM\cf0  EventVenueMaster evm \cf2 WITH\cf4 (\cf2 NOLOCK\cf4 )\cf0 \
+				\cf2 WHERE\cf0  evm\cf4 .\cf0 Region \cf4 IN\cf2  \cf4 (\cf2 SELECT \cf4 (\cf2 CASE\cf0  \cf2 WHEN\cf0  \cf6 ISNULL\cf4 (\cf0 States\cf4 ,\cf5 ''\cf4 )=\cf5 ''\cf0  \cf2 THEN\cf0  evm\cf4 .\cf0 Region \cf2 ELSE\cf0  States \cf2 END\cf4 )\cf0  \cf2 FROM\cf0  dbo\cf4 .\cf0 FUN_GetLocation\cf4 (\cf0 @State\cf4 ))\cf0  \cf4 and\cf0  Latitude \cf4 !=\cf0  \cf5 ''\cf0  \cf4 and\cf0  Longitude \cf4 !=\cf0  \cf5 ''\cf0 \
+			\cf2 end\cf0 \
+		\cf2 END\cf0 \
+\
+	\cf2 SELECT\cf0  \cf4 *\cf0  \cf2 INTO\cf0  #TempTable \cf2 FROM\cf0 \
+\cf2 	\cf4 (\cf0 \
+		\cf2 SELECT\cf0 \
+		em\cf4 .\cf0 EventId\cf4 ,\cf0 \
+		em\cf4 .\cf0 EventVenueId\cf4 ,\cf0 \
+		em\cf4 .\cf0 StartDateTime \cf2 AS\cf0  startDate\cf4 ,\cf0 \
+		evm\cf4 .\cf0 Latitude\cf4 ,\cf0 \
+		evm\cf4 .\cf0 Longitude\cf4 ,\cf0 \
+		evm\cf4 .\cf0 Distance\
+		\cf2 FROM\cf0 \
+\cf2 		\cf4 (\cf0 \
+			\cf2 SELECT\cf0  \cf4 *\cf0  \cf2 FROM\cf0  EventMaster em \cf2 WITH\cf4 (\cf2 NOLOCK\cf4 )\cf0 \
+			\cf2 WHERE\cf0  em\cf4 .\cf0 EventType \cf4 =\cf0  \cf5 'Public'\cf0 \
+			\cf4 AND\cf0  \cf6 ISNULL\cf4 (\cf0 em\cf4 .\cf0 Name\cf4 ,\cf0  \cf5 ''\cf4 )\cf0  \cf4 LIKE\cf0  \cf5 N'%'\cf0  \cf4 +\cf0  \cf6 ISNULL\cf4 (\cf0 @SearchText\cf4 ,\cf0  \cf6 ISNULL\cf4 (\cf0 em\cf4 .\cf0 Name\cf4 ,\cf0  \cf5 ''\cf4 ))\cf0  \cf4 +\cf0  \cf5 '%'\cf0 \
+			\cf4 AND\cf0  em\cf4 .\cf0 UserId \cf4 NOT\cf0  \cf4 IN\cf2  \cf4 (\cf2 SELECT\cf0  UserId \cf2 FROM\cf0  @ttBlockUsers\cf4 )\cf0 \
+			\cf4 AND\cf0  em\cf4 .\cf0 UserId \cf4 NOT\cf0  \cf4 IN\cf2  \cf4 (\cf2 Select\cf0  \cf6 User_Id\cf0  \cf2 FROM\cf0  tbl_useraccount \cf2 WHERE\cf0  IsReportedByAdmin \cf4 =\cf0  1\cf4 )\cf0 \
+			\cf4 AND\cf2  \cf4 (\cf6 ISNULL\cf4 (\cf0 em\cf4 .\cf0 EndDateTime\cf4 ,\cf0  \cf5 ''\cf4 )\cf0  \cf4 =\cf0  \cf5 ''\cf0  \cf4 OR\cf0  dbo\cf4 .\cf0 ConvertUTCToSpecificTimeZone\cf4 (\cf0 em\cf4 .\cf0 EndDateTime\cf4 ,\cf0 @OffsetInMinutes\cf4 )\cf0  \cf4 >\cf0  dbo\cf4 .\cf0 ConvertUTCToSpecificTimeZone\cf4 (\cf6 GETUTCDATE\cf4 (),\cf0 @OffsetInMinutes\cf4 ))\cf0 \
+			\cf4 AND\cf2  \cf4 (\cf6 ISNULL\cf4 (\cf0 em\cf4 .\cf0 EndDateTime\cf4 ,\cf0  \cf5 ''\cf4 )\cf0  \cf4 =\cf0  \cf5 ''\cf0  \cf4 OR\cf2  \cf4 (\cf6 DATEDIFF\cf4 (\cf0 D\cf4 ,\cf0  dbo\cf4 .\cf0 ConvertUTCToSpecificTimeZone\cf4 (\cf0 em\cf4 .\cf0 StartDateTime\cf4 ,\cf0 @OffsetInMinutes\cf4 ),\cf0 dbo\cf4 .\cf0 ConvertUTCToSpecificTimeZone\cf4 (\cf0 em\cf4 .\cf0 EndDateTime\cf4 ,\cf0 @OffsetInMinutes\cf4 )))\cf0  \cf4 <=\cf0  30\cf4 )\cf0 \
+			\cf4 AND\cf2  \cf4 (\cf6 ISNULL\cf4 (\cf0 em\cf4 .\cf0 EndDateTime\cf4 ,\cf0  \cf5 ''\cf4 )\cf0  \cf4 !=\cf0  \cf5 ''\cf0  \cf4 OR\cf0  dbo\cf4 .\cf0 ConvertUTCToSpecificTimeZone\cf4 (\cf0 em\cf4 .\cf0 StartDateTime\cf4 ,\cf0 @OffsetInMinutes\cf4 )\cf0  \cf4 >\cf0  dbo\cf4 .\cf0 ConvertUTCToSpecificTimeZone\cf4 (\cf6 GETUTCDATE\cf4 (),\cf0 @OffsetInMinutes\cf4 ))\cf0 \
+		\cf4 )\cf0  em\
+		\cf4 INNER\cf0  \cf4 JOIN\cf0  @ttEventVenue evm \cf2 ON\cf0  em\cf4 .\cf0 EventVenueId \cf4 =\cf0  evm\cf4 .\cf0 VenueId\
+	\cf4 )\cf0  \cf2 AS\cf0  TempTable\
+\
+	\cf2 DECLARE\cf0  @TotalRecords \cf2 AS\cf0  \cf2 INT\cf0 \
+	\cf2 SELECT\cf0  @TotalRecords \cf4 =\cf0  \cf6 COUNT\cf4 (*)\cf0  \cf2 FROM\cf0  #TempTable\
+\
+	\cf2 SELECT\cf0 \
+	ttFilter\cf4 .\cf0 EventId\cf4 ,\cf0 \
+	ttFilter\cf4 .\cf0 EventVenueId\cf4 ,\cf0 \
+	ttFilter\cf4 .\cf0 startDate\cf4 ,\cf0 \
+	ttFilter\cf4 .\cf0 Latitude\cf4 ,\cf0 \
+	ttFilter\cf4 .\cf0 Longitude\cf4 ,\cf0 \
+	ttFilter\cf4 .\cf0 Distance\cf4 ,\cf0 \
+	em\cf4 .\cf0 Name \cf2 AS\cf0  eventName\cf4 ,\cf0 \
+	em\cf4 .\cf2 Description\cf4 ,\cf0 \
+	em\cf4 .\cf0 LogoURL\cf4 ,\cf0 \
+	@TotalRecords \cf2 AS\cf0  TotalRecords\
+	\cf2 FROM\cf0 \
+\cf2 	\cf4 (\cf0 \
+		\cf2 SELECT\cf0  \cf4 *\cf0  \cf2 FROM\cf0 \
+\cf2 		\cf4 (\cf0 \
+			\cf2 SELECT\cf0  \cf6 ROW_NUMBER\cf4 ()\cf0  \cf2 OVER\cf4 (\cf2 ORDER\cf0  \cf2 BY\cf0  Distance \cf2 ASC\cf4 )\cf0  \cf2 AS\cf0  RowNumber\cf4 ,\cf0  \cf4 *\cf0  \cf2 FROM\cf0  #TempTable\
+		\cf4 )\cf0  \cf2 AS\cf0  TempTable\
+		\cf2 WHERE\cf0  RowNumber \cf4 BETWEEN\cf2  \cf4 (\cf0 @PageNumber \cf4 -\cf0  1\cf4 )\cf0  \cf4 *\cf0  @PageSize \cf4 +\cf0  1 \cf4 AND\cf0  @PageNumber \cf4 *\cf0  @PageSize \
+	\cf4 )\cf0  ttFilter\
+	\cf4 INNER\cf0  \cf4 JOIN\cf0  EventMaster em \cf2 WITH\cf4 (\cf2 NOLOCK\cf4 )\cf0  \cf2 ON\cf0  ttFilter\cf4 .\cf0 EventId \cf4 =\cf0  em\cf4 .\cf0 EventId \cf4 AND\cf0  ttFilter\cf4 .\cf0 EventVenueId \cf4 =\cf0  em\cf4 .\cf0 EventVenueId \cf2 order\cf0  \cf2 by\cf0  ttFilter\cf4 .\cf0 Distance \cf2 ASC\cf0 \
+\
+	\cf2 DROP\cf0  \cf2 TABLE\cf0  #TempTable\
+\cf2 END\
+}

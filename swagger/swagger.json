@@ -1,0 +1,1480 @@
+{
+  "swagger": "2.0" ,
+  "info": {
+    "version": "1.0.0" ,
+    "title": "Buddy App" ,
+    "description": "Buddy Swagger" ,
+    "license": {
+      "name": "MIT" ,
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  } ,
+  "host": "192.168.200.34:3000" ,
+  "tags": [
+    {
+      "name": "User" ,
+      "description": "API for Users of the system"
+    },
+    {
+      "name": "Student",
+      "description": "API for Student"
+    },
+    {
+      "name": "TimeTable",
+      "description": "API for TimeTable"
+    },
+    {
+      "name": "Standard",
+      "description": "API for Standard"
+    },
+    {
+      "name": "Division",
+      "description": "API for Division"
+    },
+    {
+      "name": "Complain",
+      "description": "API for Complain"
+    },
+    {
+      "name": "Notes",
+      "description": "API for Notes"
+    },
+    {
+      "name": "Attendance",
+      "description": "API for Attendance"
+    },
+    {
+      "name": "Community",
+      "description": "API for Community"
+    },
+    {
+      "name": "Study Material",
+      "description": "API for Study Material"
+    }
+  ] ,
+  "schemes": [
+    "http"
+  ] ,
+  "consumes": [
+    "application/json"
+  ] ,
+  "produces": [
+    "application/json"
+  ] ,
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security":[
+    {
+      "api_key":[]
+    }
+  ],
+  "paths": {
+    "/user/userLogin":{
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Login route for users",
+        "description": "Allows user to login by providing email and password",
+        "parameters": [
+          {
+            "name": "login",
+            "in": "body",
+            "description": "login credentials of user",
+            "schema": {
+              "$ref": "#/definitions/UserLogin"
+            }
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses" :{
+          "201": {
+            "description": "User logged in successfully",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/user/teacher":{
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Add teacher",
+        "description": "Add new teacher to system",
+        "parameters": [
+          {
+            "name": "insert teacher",
+            "in": "body",
+            "description": "teacher data",
+            "schema": {
+              "$ref": "#/definitions/teacherData"
+            }
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses" :{
+          "201": {
+            "description": "Teacher created successfully",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      },
+      "get":{
+        "tags":[
+          "User"
+        ],
+        "summary":"Get teachers",
+        "description": "Get all teachers",
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Teachers fetched",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/user/parentStudent":{
+      "post":{
+        "tags":[
+          "User"
+        ],
+        "summary": "Create parent and student",
+        "description": "Add new parent and student to the system",
+        "parameters":[
+          {
+            "name": "create student and teacher",
+            "in": "body",
+            "description": "parent and student data",
+            "schema":{
+              "$ref": "#/definitions/parentStudentData"
+            }
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "Student and teacher added to system successfully",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/user/assignTeacher":{
+      "post":{
+        "tags":[
+          "User"
+        ],
+        "summary": "Assign class to teacher",
+        "description": "Make teacher class teacher by assigning class",
+        "parameters":[
+          {
+            "name": "Assign teacher",
+            "in": "body",
+            "description": "teacher and class info",
+            "schema": {
+              "$ref": "#/definitions/assignClassData"
+            }
+          }
+        ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "201":{
+            "description":"Teacher assigned successfully",
+            "schema":{
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/user/unassignTeacher/{teacher_id}":{
+      "delete":{
+        "tags":[
+          "User"
+        ],
+        "summary": "Un-Assign class to teacher",
+        "description": "Un-assign teacher as class teacher",
+        "parameters":[
+          {
+            "name": "teacher_id",
+            "in": "path",
+            "description": "teacher id to be unassigned",
+            "required": true,
+            "type" : "integer"
+          }
+        ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "201":{
+            "description":"Teacher assigned successfully",
+            "schema":{
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/user/changePassword":{
+      "put":{
+        "tags": [
+          "User"
+        ],
+        "summary": "Change password",
+        "description": "Allows the user of the system to change password",
+        "parameters":[
+            {
+              "name": "password",
+              "in": "body",
+              "description": "new password",
+              "schema": {
+                "$ref": "#/definitions/passwordChange"
+              }
+            }
+          ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Password changed",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/user/deleteUser":{
+      "delete":{
+        "tags": [
+          "User"
+        ],
+        "summary": "Delete user",
+        "description": "Delete user(student and parent) from system",
+        "parameters":[
+          {
+            "name": "emails",
+            "in": "body",
+            "description": "emails of users to be removed",
+            "schema":{
+              "$ref": "#/definitions/removeUsers"
+            }
+          }
+        ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Users removed changed",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/user/updateStudent":{
+      "post":{
+        "tags":[
+          "User"
+        ],
+        "summary": "Update student",
+        "description": "Update student detail",
+        "parameters": [
+          {
+            "name": "Update data",
+            "in": "body",
+            "description": "New data of user",
+            "schema": {
+              "$ref": "#/definitions/updateUserData"
+            }
+          }
+        ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Student updated",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/user/class/classList" :{
+      "get":{
+        "tags":[
+          "User"
+        ],
+        "summary":"Class list",
+        "description": "Get information about class",
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Class information fetched",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/user/forgotPassword/{email}": {
+      "get":{
+        "tags": [
+          "User"
+        ],
+        "summary": "Forgot password",
+        "description":"Get code for setting new password",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "description": "Email of user",
+            "type": "string"
+          }
+        ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Code sent on user email",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/user/resetPassword": {
+      "put":{
+        "tags": [
+          "User"
+        ],
+        "summary": "Set new password",
+        "description": "Allows the user to set new password when user forgets password",
+        "parameters":[
+          {
+            "name": "password",
+            "in": "body",
+            "description": "new password",
+            "schema": {
+              "$ref": "#/definitions/resetPassword"
+            }
+          }
+        ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Password changed",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/student/classList/{division_id}": {
+      "get":{
+        "tags": [
+          "Student"
+        ],
+        "summary": "Students list",
+        "description":"Get class wise student list",
+        "parameters": [
+          {
+            "name": "division_id",
+            "in": "path",
+            "required": true,
+            "description": "ID of division",
+            "type": "integer"
+          }
+        ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Students list",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/student/studentList":{
+      "get":{
+        "tags":[
+          "Student"
+        ],
+        "summary":"Student data",
+        "description": "Get all students division wise",
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Student list",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/timeTable/addLecture":{
+      "post":{
+        "tags": [
+          "TimeTable"
+        ],
+        "summary": "Add lecture",
+        "description": "Allows admin to add lecturd",
+        "parameters":[
+          {
+            "name": "lecture data",
+            "in": "body",
+            "description": "lecture body",
+            "schema": {
+              "$ref": "#/definitions/lectureData"
+            }
+          }
+        ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Lecture added",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/timeTable/{division_id}":{
+      "get":{
+        "tags":[
+          "TimeTable"
+        ],
+        "summary":"Time table schedule",
+        "description": "Get class wise time table schedule",
+        "parameters": [
+          {
+            "name": "division_id",
+            "in": "path",
+            "required": true,
+            "description": "ID of division",
+            "type": "integer"
+          }
+        ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Time table list",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/timeTable/teacherSchedule/schedule": {
+      "get":{
+        "tags":[
+          "TimeTable"
+        ],
+        "summary":"Get schedule",
+        "description": "Get schedule of teacher for particular day",
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Schedule retrieved",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/timeTable/student/timeTable/schedule":{
+      "get":{
+        "tags": [
+          "TimeTable"
+        ],
+        "summary": "Timetable schedule",
+        "description": "Timetable schedule of student",
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Schedule retrieved for student or parent",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/timeTable/{id}":{
+      "delete": {
+        "tags": [
+          "TimeTable"
+        ],
+        "summary": "Delete lecture",
+        "description" : "Delete specific lecture",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID of time table",
+            "type": "integer"
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses" :{
+          "201": {
+            "description": "Lecture deleted",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      },
+      "put":{
+        "tags": [
+          "TimeTable"
+        ],
+        "summary": "Add lecture",
+        "description": "Allows admin to add lecturd",
+        "parameters":[
+          {
+            "name": "id",
+            "in": "path",
+            "description" :"Id of lecture to be edited",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "lecture data",
+            "in": "body",
+            "description": "lecture body",
+            "schema": {
+              "$ref": "#/definitions/lectureData"
+            }
+          }
+        ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Lecture updated",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/standard":{
+      "get":{
+        "tags":[
+          "Standard"
+        ],
+        "summary":"Standard data",
+        "description": "Get all standards",
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Standard list",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/division":{
+      "get":{
+        "tags":[
+          "Division"
+        ],
+        "summary":"Division data",
+        "description": "Get all Divisions",
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Division list",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/division/standard/{id}":{
+      "get":{
+        "tags":[
+          "Division"
+        ],
+        "summary":"Standard divisions",
+        "description": "Get divisions for standard",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID of Standard",
+            "type": "integer"
+          }
+        ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Divisions data",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/complain/":{
+      "post":{
+        "tags":[
+          "Complain"
+        ],
+        "summary": "Post complain",
+        "description": "Complain/Feedback by parent",
+        "parameters":[
+          {
+            "name": "Complain/feedback data",
+            "in": "body",
+            "description": "Complain or feedback given by parent",
+            "schema":{
+              "$ref": "#/definitions/complainNotesData"
+            }
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses" :{
+          "201": {
+            "description": "Complain/feedback posted successfully",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Complain"
+        ],
+        "summary": "View complain/feedback",
+        "description": "View complain or feedback given by parents",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses" :{
+          "201": {
+            "description": "Complain/feedback fetched successfully",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/complain/parent": {
+      "get": {
+        "tags": [
+          "Complain"
+        ],
+        "summary": "View complain/feedback",
+        "description": "View complain or feedback given by parents themselves",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses" :{
+          "201": {
+            "description": "Complain/feedback fetched successfully",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/notes/teacher":{
+      "post":{
+        "tags":[
+          "Notes"
+        ],
+        "summary": "Post note",
+        "description": "Note by teacher",
+        "parameters":[
+          {
+            "name": "Note data",
+            "in": "body",
+            "description": "Note added by teacher",
+            "schema":{
+              "$ref": "#/definitions/complainNotesData"
+            }
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses" :{
+          "201": {
+            "description": "Note posted successfully",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Notes"
+        ],
+        "summary": "View notes",
+        "description": "View notes added by particular teacher",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses" :{
+          "201": {
+            "description": "Notes fetched successfully",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/notes/student/{date}":{
+      "get":{
+        "tags":[
+          "Notes"
+        ],
+        "summary":"Get notes",
+        "description": "Get notes for particular day",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "description": "Date of day to fetch notes",
+            "type": "string"
+          }
+        ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Notes data",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/attendance/":{
+      "post":{
+        "tags":[
+          "Attendance"
+        ],
+        "summary": "Record/Update attendance",
+        "description": "Record/Update attendance for day by class teacher",
+        "parameters":[
+          {
+            "name": "Attendance data",
+            "in": "body",
+            "description": "Attendance of student to be recorded",
+            "schema":{
+              "$ref": "#/definitions/attendanceData"
+            }
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses" :{
+          "201": {
+            "description": "Attendance recorded successfully",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Attendance"
+        ],
+        "summary": "View attendance",
+        "description": "View current day attendance",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses" :{
+          "201": {
+            "description": "Attendance fetched successfully",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/attendance/date/{date}": {
+      "get":{
+        "tags":[
+          "Attendance"
+        ],
+        "summary":"Day attendance",
+        "description": "Get particular day attendance",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "description": "Date of day to fetch attendance",
+            "type": "string"
+          }
+        ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Attendance data",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/community/": {
+      "get":{
+        "tags":[
+          "Community"
+        ],
+        "summary":"Community data",
+        "description": "Get community data",
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Community data fetched",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/community/media": {
+      "delete":{
+        "tags": [
+          "Community"
+        ],
+        "summary": "Delete media",
+        "description": "Delete community media",
+        "parameters":[
+          {
+            "name": "ids",
+            "in": "body",
+            "description": "ids of media to be removed",
+            "schema":{
+              "$ref": "#/definitions/mediaId"
+            }
+          }
+        ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Users removed changed",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/community/{id}":{
+      "delete":{
+        "tags":[
+          "Community"
+        ],
+        "summary":"Community delete",
+        "description": "Delete community related data",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID of community",
+            "type": "integer"
+          }
+        ],
+        "produces":[
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses":{
+          "200": {
+            "description": "Community deleted",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/studyMaterial": {
+      "get": {
+        "tags": [
+          "Study Material"
+        ],
+        "summary": "View lectures",
+        "description": "View lectures in classes",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses" :{
+          "201": {
+            "description": "Classes detail found",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/studyMaterial/teacher/materials/{subject_id}/{division_id}":{
+      "get":{
+        "tags": [
+          "Study Material"
+        ],
+        "summary": "Get materials",
+        "description" : "Get materials posted by teacher",
+        "parameters": [
+          {
+            "name": "subject_id",
+            "in": "path",
+            "required": true,
+            "description": "ID of subject",
+            "type": "integer"
+          },
+          {
+            "name": "division_id",
+            "in": "path",
+            "required": true,
+            "description": "ID of division",
+            "type": "integer"
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses" :{
+          "201": {
+            "description": "Materials fetched",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/studyMaterial/media/{id}": {
+      "delete": {
+        "tags": [
+          "Study Material"
+        ],
+        "summary": "Delete media",
+        "description" : "Delete media uploaded by teacher",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID of media",
+            "type": "integer"
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses" :{
+          "201": {
+            "description": "Materials deleted",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/studyMaterial/student/lectures" : {
+      "get": {
+        "tags": [
+          "Study Material"
+        ],
+        "summary": "View student subjects",
+        "description": "View subjects student learn",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses" :{
+          "201": {
+            "description": "Subjects retrieved",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/studyMaterial/student/materials/{subject_id}": {
+      "get":{
+        "tags": [
+          "Study Material"
+        ],
+        "summary": "Get materials",
+        "description" : "Get materials posted by teacher",
+        "parameters": [
+          {
+            "name": "subject_id",
+            "in": "path",
+            "required": true,
+            "description": "ID of subject",
+            "type": "integer"
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses" :{
+          "201": {
+            "description": "Materials fetched",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    }
+  } ,
+  "definitions": {
+    "UserLogin": {
+      "required": [
+        "email",
+        "password"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "pattern": "^(([^<>()\\[\\]\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "teacherData":{
+        "required": [
+          "email",
+          "name",
+          "mobile_no",
+          "address"
+        ],
+      "properties":{
+        "email": {
+          "type": "string",
+          "pattern": "^(([^<>()\\[\\]\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "mobile_no": {
+          "type": "string"
+        },
+        "address": {
+          "type" : "string"
+        }
+      }
+    },
+    "parentStudentData":{
+      "required": [
+        "parent_email",
+        "student_email",
+        "parent_name",
+        "phone_number",
+        "student_name",
+        "standard_id",
+        "division_id"
+      ],
+      "properties":{
+        "parent_email":{
+          "type": "string",
+          "pattern": "^(([^<>()\\[\\]\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$"
+        },
+        "student_email":{
+          "type": "string",
+          "pattern": "^(([^<>()\\[\\]\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$"
+        },
+        "parent_name": {
+          "type": "string"
+        },
+        "phone_number": {
+          "type": "string"
+        },
+        "student_name":{
+          "type": "string"
+        },
+        "standard_id":{
+          "type": "integer"
+        },
+        "division_id":{
+          "type": "integer"
+        }
+      }
+    },
+    "assignClassData":{
+      "required":[
+        "teacher_id",
+        "standard_id",
+        "division_id"
+      ],
+      "properties": {
+        "teacher_id":{
+          "type": "integer"
+        },
+        "standard_id":{
+          "type": "integer"
+        },
+        "division_id": {
+          "type":"integer"
+        }
+      }
+    },
+    "passwordChange":{
+      "required":[
+        "oldPassword",
+        "password"
+      ],
+      "properties":{
+        "oldPassword": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "lectureData": {
+      "required": [
+        "day",
+        "subject_id",
+        "teacher_id",
+        "duration_id",
+        "standard_id",
+        "division_id"
+      ],
+      "properties": {
+        "day":{
+          "type": "string"
+        },
+        "subject_id":{
+          "type": "integer"
+        },
+        "teacher_id":{
+          "type": "integer"
+        },
+        "duration_id":{
+          "type": "integer"
+        },
+        "standard_id":{
+          "type": "integer"
+        },
+        "division_id":{
+          "type": "integer"
+        }
+      }
+    },
+    "complainNotesData": {
+      "required": [
+        "title",
+        "description"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "removeUsers":{
+      "required":[
+        "student_email",
+        "parent_email"
+      ],
+      "properties": {
+        "student_email":{
+          "type": "string"
+        },
+        "parent_email": {
+          "type": "string"
+        }
+      }
+    },
+    "updateUserData":{
+      "required":[
+        "studentName",
+        "parentName",
+        "phone_number",
+        "studentEmail",
+        "parentEmail"
+      ],
+      "properties":{
+        "studentName": {
+          "type": "string"
+        },
+        "parentName": {
+          "type": "string"
+        },
+        "phone_number": {
+          "type": "string"
+        },
+        "studentEmail": {
+          "type": "string"
+        },
+        "parentEmail": {
+          "type": "string"
+        }
+      }
+    },
+    "attendanceData": {
+      "required":[
+        "student_id",
+        "present"
+      ],
+      "properties": {
+        "student_id" :{
+          "type": "integer"
+        },
+        "present": {
+          "type": "boolean"
+        }
+      }
+    },
+    "mediaId" :{
+      "required": [
+        "ids"
+      ],
+      "properties" :{
+        "ids" :{
+          "type": "string"
+        }
+      }
+    },
+    "resetPassword" :{
+      "required": [
+        "email",
+        "password"
+      ],
+      "properties" :{
+        "email" :{
+          "type": "string"
+        },
+        "password" :{
+          "type": "string"
+        }
+      }
+    }
+  }
+}
